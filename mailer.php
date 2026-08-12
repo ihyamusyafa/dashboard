@@ -11,13 +11,13 @@ function sendOtpMail($toEmail, $otp) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'alamatgmailkamu@gmail.com'; // ganti dengan email kamu
-        $mail->Password   = 'APP_PASSWORD';              // App Password dari Google
+        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // ganti dengan email kamu
+        $mail->Password   = 'bkudppyekzrwjyit';              // App Password dari Google
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
 
         // Recipients
-        $mail->setFrom('alamatgmailkamu@gmail.com', 'LPKBNI System');
+        $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
         $mail->addAddress($toEmail);
 
         // Content
