@@ -23,17 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             if ($success) {
-                // generate OTP
+                // generate OTP sekali saja
                 $otp = rand(100000, 999999);
-                $_SESSION['pending_user'] = $username;
+                $_SESSION['pending_user']  = $username;
                 $_SESSION['pending_email'] = $email;
-                $_SESSION['otp'] = $otp;
+                $_SESSION['otp']           = $otp;
 
-                // sementara skip mail() dulu biar nggak error di Railway
-                // nanti diganti PHPMailer + SMTP
-
-                header("Location: otp.php");
-                exit;
+                // kirim email OTP
+                include 'mailer.php';
+                if (sendOtpMail($email, $otp)) {
+                    header("Location: otp.php");
+                    exit;
+                } else {
+                    $error = "Gagal mengirim OTP ke email.";
+                }
             } else {
                 $error = "Gagal daftar: " . implode(" | ", $stmt->errorInfo());
             }
@@ -43,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
