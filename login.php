@@ -44,8 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if(isset($error)) echo "<p class='error'>$error</p>"; ?>
 
     <p class="register-text">
-      Belum punya akun? <a href="#">Daftar Sekarang</a>
+          Belum punya akun? <a href="register.php">Daftar Sekarang</a>
     </p>
+
   </div>
 </body>
 </html>
