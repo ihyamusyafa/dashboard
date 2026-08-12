@@ -1,6 +1,9 @@
 FROM php:8.2-apache
 
-# Install ekstensi PostgreSQL untuk PDO
+# Install dependency PostgreSQL dev library
+RUN apt-get update && apt-get install -y libpq-dev
+
+# Install ekstensi PDO dan PostgreSQL
 RUN docker-php-ext-install pdo pdo_pgsql
 
 # Copy semua file project ke container
