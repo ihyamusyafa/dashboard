@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'config/database.php'; // sesuaikan dengan koneksi DB kamu
+include 'config/database.php'; // koneksi pakai PDO
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username   = trim($_POST['username']);
@@ -11,27 +11,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirmPwd) {
         $error = "Password dan konfirmasi tidak sama!";
     } else {
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) VALUES (?, ?, ?, 0)");
-        $stmt->bind_param("sss", $username, $email, $hashedPassword);
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
+                                    VALUES (:u, :e, :p, false)");
+            $success = $stmt->execute([
+                ':u' => $username,
+                ':e' => $email,
+                ':p' => $hashedPassword
+            ]);
 
-        if ($stmt->execute()) {
-            // generate OTP
-            $otp = rand(100000, 999999);
-            $_SESSION['pending_user'] = $username;
-            $_SESSION['pending_email'] = $email;
-            $_SESSION['otp'] = $otp;
+            if ($success) {
+                // generate OTP
+                $otp = rand(100000, 999999);
+                $_SESSION['pending_user'] = $username;
+                $_SESSION['pending_email'] = $email;
+                $_SESSION['otp'] = $otp;
 
-            // kirim OTP via email
-            $subject = "Kode OTP Registrasi";
-            $message = "Halo $username,\n\nKode OTP kamu adalah: $otp\n\nMasukkan kode ini untuk verifikasi akun.";
-            mail($email, $subject, $message, "From: no-reply@lpkbni.com");
+                // sementara skip mail() dulu biar nggak error di Railway
+                // nanti diganti PHPMailer + SMTP
 
-            header("Location: otp.php");
-            exit;
-        } else {
-            $error = "Gagal daftar: " . $stmt->error;
+                header("Location: otp.php");
+                exit;
+            } else {
+                $error = "Gagal daftar: " . implode(" | ", $stmt->errorInfo());
+            }
+        } catch (PDOException $e) {
+            $error = "Database error: " . $e->getMessage();
         }
     }
 }
