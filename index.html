@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>My Dashboard</h1>
+  </header>
+
+  <main>
+    <section id="user-table">
+      <h2>Users</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+        </thead>
+        <tbody id="users-data">
+          <!-- Data dari Supabase akan muncul di sini -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
