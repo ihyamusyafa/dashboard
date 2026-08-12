@@ -16,20 +16,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+  <meta charset="UTF-8">
   <title>Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="login-body">
   <div class="login-container">
-    <h2>Login</h2>
-    <form method="POST">
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Login</button>
+    <div class="login-header">
+      <img src="fingerprint-icon.png" alt="Fingerprint" class="login-icon">
+      <h1>Selamat Datang</h1>
+      <p>Masuk ke akun Anda untuk melanjutkan</p>
+    </div>
+
+    <form method="POST" class="login-form">
+      <div class="input-group">
+        <input type="text" name="username" placeholder="Username" required>
+      </div>
+      <div class="input-group">
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="login-btn">Login</button>
     </form>
-    <?php if(isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
+
+    <?php if(isset($error)) echo "<p class='error'>$error</p>"; ?>
+
+    <p class="register-text">
+      Belum punya akun? <a href="#">Daftar Sekarang</a>
+    </p>
   </div>
 </body>
 </html>
