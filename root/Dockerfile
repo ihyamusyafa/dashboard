@@ -1,10 +1,13 @@
 FROM php:8.2-apache
 
-# Install ekstensi PostgreSQL
-RUN docker-php-ext-install pdo pdo_pgsql
+# Install build tools and PostgreSQL client headers, then build pdo_pgsql
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends libpq-dev gcc make autoconf libc-dev \
+	&& docker-php-ext-install pdo_pgsql \
+	&& rm -rf /var/lib/apt/lists/*
 
-# Copy semua file ke container
+# Copy project files into the container
 COPY . /var/www/html/
 
-# Jalankan server di port 8080
-EXPOSE 8080
+# Apache in this image listens on port 80
+EXPOSE 80
