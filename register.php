@@ -12,33 +12,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Password dan konfirmasi tidak sama!";
     } else {
         try {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            // cek apakah email sudah terdaftar
+            $check = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = :e");
+            $check->execute([':e' => $email]);
+            $exists = $check->fetchColumn();
 
-            $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
-                                    VALUES (:u, :e, :p, false)");
-            $success = $stmt->execute([
-                ':u' => $username,
-                ':e' => $email,
-                ':p' => $hashedPassword
-            ]);
-
-            if ($success) {
-                // generate OTP sekali saja
-                $otp = rand(100000, 999999);
-                $_SESSION['pending_user']  = $username;
-                $_SESSION['pending_email'] = $email;
-                $_SESSION['otp']           = $otp;
-
-                // kirim email OTP
-                include 'mailer.php';
-                if (sendOtpMail($email, $otp)) {
-                    header("Location: otp.php");
-                    exit;
-                } else {
-                    $error = "Gagal mengirim OTP ke email.";
-                }
+            if ($exists > 0) {
+                $error = "Email sudah terdaftar, silakan login atau gunakan email lain.";
             } else {
-                $error = "Gagal daftar: " . implode(" | ", $stmt->errorInfo());
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+                $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
+                                        VALUES (:u, :e, :p, false)");
+                $success = $stmt->execute([
+                    ':u' => $username,
+                    ':e' => $email,
+                    ':p' => $hashedPassword
+                ]);
+
+                if ($success) {
+                    // generate OTP
+                    $otp = rand(100000, 999999);
+                    $_SESSION['pending_user']  = $username;
+                    $_SESSION['pending_email'] = $email;
+                    $_SESSION['otp']           = $otp;
+
+                    // kirim email OTP
+                    include 'mailer.php';
+                    if (sendOtpMail($email, $otp)) {
+                        header("Location: otp.php");
+                        exit;
+                    } else {
+                        $error = "Gagal mengirim OTP ke email.";
+                    }
+                } else {
+                    $error = "Gagal daftar: " . implode(" | ", $stmt->errorInfo());
+                }
             }
         } catch (PDOException $e) {
             $error = "Database error: " . $e->getMessage();
@@ -46,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -87,3 +95,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 </body>
 </html>
+  
