@@ -14,17 +14,21 @@ function sendOtpMail($toEmail, $otp) {
         };
 
         // Server settings
+        $mailHost     = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
+        $mailUsername = getenv('MAIL_USERNAME');
+        $mailPassword = getenv('MAIL_PASSWORD');
+
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = $mailHost;
         $mail->SMTPAuth   = true;
-        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // Gmail kamu
-        $mail->Password   = 'alabatdrxikpltsf';                   // App Password Gmail (16 digit)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Gmail pakai STARTTLS di port 587
-        $mail->Port       = 587;
+        $mail->Username   = $mailUsername;
+        $mail->Password   = $mailPassword;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          // Gunakan SMTPS di port 465
+        $mail->Port       = 465;
         $mail->Timeout    = 10;
 
         // Recipients
-        $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
+        $mail->setFrom($mailUsername, 'LPKBNI System');
         $mail->addAddress($toEmail);
 
         // Content
