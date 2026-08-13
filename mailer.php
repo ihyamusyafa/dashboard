@@ -15,16 +15,16 @@ function sendOtpMail($toEmail, $otp) {
 
         // Server settings
         $mail->isSMTP();
-        $mail->Host       = getenv('smtp.gmail.com');       // ex: smtp.sendgrid.net / smtp.gmail.com
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('2311501650@student.budiluhur.ac.id');   // email / apikey
-        $mail->Password   = getenv('alabatdrxikpltsf');   // app password / API key
+        $mail->Username   = '2311501650@student.budiluhur.ac.id';
+        $mail->Password   = 'alabatdrxikpltsf';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = getenv('587');       // 587 (STARTTLS) atau 465 (SMTPS)
+        $mail->Port       = 587;
         $mail->Timeout    = 10;
 
         // Recipients
-       $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
+        $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
         $mail->addAddress($toEmail);
 
         // Content
