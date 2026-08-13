@@ -13,18 +13,20 @@ function sendOtpMail($toEmail, $otp) {
             error_log("SMTP: $str");
         };
 
-        // Server settings
+        // Server settings - use environment variables or fallback to hardcoded
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // Gmail kamu
-        $mail->Password   = 'alabatdrxikpltsf';                   // App Password Gmail (16 digit)
+        $mail->Username   = getenv('SMTP_USERNAME') ?: '2311501650@student.budiluhur.ac.id';
+        $mail->Password   = getenv('SMTP_PASSWORD') ?: 'alabatdrxikpltsf';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          // Use SMTPS instead of STARTTLS
-        $mail->Port       = 465;                                   // SMTPS port (was 587)
+        $mail->Port       = (int)(getenv('SMTP_PORT') ?: 465);    // SMTPS port (was 587)
         $mail->Timeout    = 10;
 
         // Recipients
-        $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
+        $senderEmail = getenv('SMTP_USERNAME') ?: '2311501650@student.budiluhur.ac.id';
+        $senderName = getenv('SENDER_NAME') ?: 'LPKBNI System';
+        $mail->setFrom($senderEmail, $senderName);
         $mail->addAddress($toEmail);
 
         // Content
@@ -34,7 +36,9 @@ function sendOtpMail($toEmail, $otp) {
 
         return $mail->send();
     } catch (Exception $e) {
-        error_log("Mailer Error: " . $mail->ErrorInfo);
+        $errorMsg = "Mailer Error: " . $mail->ErrorInfo;
+        error_log($errorMsg);
+        error_log("Exception: " . $e->getMessage());
         return false;
     }
 }
