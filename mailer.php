@@ -7,8 +7,8 @@ require __DIR__ . '/vendor/autoload.php';
 function sendOtpMail($toEmail, $otp) {
     $mail = new PHPMailer(true);
     try {
-        // Debug (0 = off, 2 = verbose)
-        $mail->SMTPDebug  = 0;
+        // Debug (0 = off, 2 = verbose). Uses env var SMTP_DEBUG=1 to enable verbose logs.
+        $mail->SMTPDebug  = getenv('SMTP_DEBUG') === '1' ? 2 : 0;
         $mail->Debugoutput = function($str, $level) {
             error_log("SMTP: $str");
         };
@@ -21,6 +21,14 @@ function sendOtpMail($toEmail, $otp) {
         $mail->Password   = getenv('SMTP_PASSWORD') ?: 'alabatdrxikpltsf';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          // Use SMTPS instead of STARTTLS
         $mail->Port       = (int)(getenv('SMTP_PORT') ?: 465);    // SMTPS port (was 587)
+        // TLS options - allow strict verification by default
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+                'allow_self_signed' => false
+            ]
+        ];
         $mail->Timeout    = 10;
 
         // Recipients

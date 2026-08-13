@@ -1,4 +1,9 @@
 <?php
+// Suppress deprecation notices in production and enable logging so Railway captures warnings
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+
 session_start();
 require __DIR__ . '/vendor/autoload.php';
 
