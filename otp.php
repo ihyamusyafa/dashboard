@@ -6,26 +6,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inputOtp = trim($_POST['otp']);
 
     if ($inputOtp == $_SESSION['otp']) {
-        try {
-            $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) VALUES (:u, :e, :p, true)");
-            $stmt->execute([
-                ':u' => $_SESSION['pending_user'],
-                ':e' => $_SESSION['pending_email'],
-                ':p' => $_SESSION['pending_pass']
-            ]);
+        $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
+                                VALUES (:u, :e, :p, true)");
+        $stmt->execute([
+            ':u' => $_SESSION['pending_user'],
+            ':e' => $_SESSION['pending_email'],
+            ':p' => $_SESSION['pending_pass']
+        ]);
 
-            // bersihkan session
-            unset($_SESSION['otp'], $_SESSION['pending_user'], $_SESSION['pending_email'], $_SESSION['pending_pass']);
-
-            $success = "Akun berhasil terdaftar dan terverifikasi!";
-        } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
-        }
+        unset($_SESSION['otp'], $_SESSION['pending_user'], $_SESSION['pending_email'], $_SESSION['pending_pass']);
+        $success = "Akun berhasil terdaftar dan terverifikasi!";
     } else {
         $error = "Kode OTP salah!";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>

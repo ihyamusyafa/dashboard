@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'mailer.php'; // fungsi kirim email OTP
+include 'mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username   = trim($_POST['username']);
@@ -11,16 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirmPwd) {
         $error = "Password dan konfirmasi tidak sama!";
     } else {
-        // generate OTP
         $otp = rand(100000, 999999);
 
-        // simpan data sementara di session (belum masuk DB)
         $_SESSION['pending_user']  = $username;
         $_SESSION['pending_email'] = $email;
         $_SESSION['pending_pass']  = password_hash($password, PASSWORD_DEFAULT);
         $_SESSION['otp']           = $otp;
 
-        // kirim email OTP
         if (sendOtpMail($email, $otp)) {
             header("Location: otp.php");
             exit;
