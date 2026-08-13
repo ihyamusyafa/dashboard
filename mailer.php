@@ -20,7 +20,7 @@ function sendOtpMail($toEmail, $otp) {
         $mail->Username   = '2311501650@student.budiluhur.ac.id'; // email kamu
         $mail->Password   = 'alabatdrxikpltsf';            // App Password Gmail (bukan password biasa)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // kalau gagal, coba STARTTLS
-        $mail->Port       = 465;                        // kalau gagal, coba 587
+        $mail->Port       = 587;                        // kalau gagal, coba 587
         $mail->Timeout    = 10;                         // maksimal 10 detik
 
         // Recipients
