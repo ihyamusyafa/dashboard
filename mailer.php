@@ -17,9 +17,9 @@ function sendOtpMail($toEmail, $otp) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = '2311501650@student.budiluhur.ac.id';
-        $mail->Password   = 'alabatdrxikpltsf';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // Gmail kamu
+        $mail->Password   = 'alabatdrxikpltsf';                   // App Password Gmail (16 digit)
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Gmail pakai STARTTLS di port 587
         $mail->Port       = 587;
         $mail->Timeout    = 10;
 
@@ -35,7 +35,6 @@ function sendOtpMail($toEmail, $otp) {
         return $mail->send();
     } catch (Exception $e) {
         error_log("Mailer Error: " . $mail->ErrorInfo);
-        
         return false;
     }
 }
