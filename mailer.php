@@ -15,16 +15,16 @@ function sendOtpMail($toEmail, $otp) {
 
         // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';          // SMTP host
+        $mail->Host       = getenv('smtp.gmail.com');       // ex: smtp.sendgrid.net / smtp.gmail.com
         $mail->SMTPAuth   = true;
-        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // email kamu
-        $mail->Password   = 'alabatdrxikpltsf';            // App Password Gmail (bukan password biasa)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // kalau gagal, coba STARTTLS
-        $mail->Port       = 587;                        // kalau gagal, coba 587
-        $mail->Timeout    = 10;                         // maksimal 10 detik
+        $mail->Username   = getenv('2311501650@student.budiluhur.ac.id');   // email / apikey
+        $mail->Password   = getenv('alabatdrxikpltsf');   // app password / API key
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = getenv('587');       // 587 (STARTTLS) atau 465 (SMTPS)
+        $mail->Timeout    = 10;
 
         // Recipients
-        $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
+       $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
         $mail->addAddress($toEmail);
 
         // Content
@@ -34,7 +34,8 @@ function sendOtpMail($toEmail, $otp) {
 
         return $mail->send();
     } catch (Exception $e) {
-        error_log("Mailer Error: " . $e->getMessage());
+        error_log("Mailer Error: " . $mail->ErrorInfo);
+        
         return false;
     }
 }
