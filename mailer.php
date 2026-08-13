@@ -7,25 +7,35 @@ require __DIR__ . '/vendor/autoload.php';
 function sendOtpMail($toEmail, $otp) {
     $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = '2311501650@student.budiluhur.ac.id';
-        $mail->Password   = 'alabatdrxikpltsf'; // ganti dengan App Password Gmail
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port       = 465;
-        $mail->Timeout    = 10;
+        // Debug (0 = off, 2 = verbose)
+        $mail->SMTPDebug  = 0;
+        $mail->Debugoutput = function($str, $level) {
+            error_log("SMTP: $str");
+        };
 
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';          // SMTP host
+        $mail->SMTPAuth   = true;
+        $mail->Username   = '2311501650@student.budiluhur.ac.id'; // email kamu
+        $mail->Password   = 'alabatdrxikpltsf';            // App Password Gmail (bukan password biasa)
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // kalau gagal, coba STARTTLS
+        $mail->Port       = 465;                        // kalau gagal, coba 587
+        $mail->Timeout    = 10;                         // maksimal 10 detik
+
+        // Recipients
         $mail->setFrom('2311501650@student.budiluhur.ac.id', 'LPKBNI System');
         $mail->addAddress($toEmail);
 
+        // Content
         $mail->isHTML(true);
         $mail->Subject = 'Kode OTP Registrasi';
         $mail->Body    = "Halo, berikut kode OTP kamu: <b>$otp</b>";
 
         return $mail->send();
     } catch (Exception $e) {
-        error_log("Mailer Error: " . $mail->ErrorInfo);
+        error_log("Mailer Error: " . $e->getMessage());
         return false;
     }
 }
+?>
