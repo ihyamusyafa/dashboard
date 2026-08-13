@@ -1,52 +1,53 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 require __DIR__ . '/vendor/autoload.php';
 
+use Google\Client;
+use Google\Service\Gmail;
+
 function sendOtpMail($toEmail, $otp) {
-    $mail = new PHPMailer(true);
     try {
-        // Debug (0 = off, 2 = verbose). Uses env var SMTP_DEBUG=1 to enable verbose logs.
-        $mail->SMTPDebug  = getenv('SMTP_DEBUG') === '1' ? 2 : 0;
-        $mail->Debugoutput = function($str, $level) {
-            error_log("SMTP: $str");
-        };
+        // Setup Google Client
+        $client = new Client();
+        $client->setAuthConfig(__DIR__ . '/credentials.json'); // file dari Google Cloud
+        $client->addScope(Gmail::GMAIL_SEND);
+        $client->setAccessType('offline');
 
-        // Server settings - use environment variables or fallback to hardcoded
-        $mail->isSMTP();
-        $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('SMTP_USERNAME') ?: '2311501650@student.budiluhur.ac.id';
-        $mail->Password   = getenv('SMTP_PASSWORD') ?: 'alabatdrxikpltsf';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          // Use SMTPS instead of STARTTLS
-        $mail->Port       = (int)(getenv('SMTP_PORT') ?: 465);    // SMTPS port (was 587)
-        // TLS options - allow strict verification by default
-        $mail->SMTPOptions = [
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true,
-                'allow_self_signed' => false
-            ]
-        ];
-        $mail->Timeout    = 10;
+        // Load token.json
+        $tokenPath = __DIR__ . '/token.json';
+        if (!file_exists($tokenPath)) {
+            throw new Exception("Token file not found. Jalankan getToken.php dulu.");
+        }
+        $accessToken = json_decode(file_get_contents($tokenPath), true);
+        $client->setAccessToken($accessToken);
 
-        // Recipients
-        $senderEmail = getenv('SMTP_USERNAME') ?: '2311501650@student.budiluhur.ac.id';
-        $senderName = getenv('SENDER_NAME') ?: 'LPKBNI System';
-        $mail->setFrom($senderEmail, $senderName);
-        $mail->addAddress($toEmail);
+        // Refresh token kalau expired
+        if ($client->isAccessTokenExpired()) {
+            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+            file_put_contents($tokenPath, json_encode($client->getAccessToken()));
+        }
 
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = 'Kode OTP Registrasi';
-        $mail->Body    = "Halo, berikut kode OTP kamu: <b>$otp</b>";
+        // Gmail service
+        $gmail = new Gmail($client);
 
-        return $mail->send();
+        // Build raw email
+        $rawMessage = "From: LPKBNI System <2311501650@student.budiluhur.ac.id>\r\n";
+        $rawMessage .= "To: $toEmail\r\n";
+        $rawMessage .= "Subject: Kode OTP Registrasi\r\n";
+        $rawMessage .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+        $rawMessage .= "Halo, berikut kode OTP kamu: <b>$otp</b>";
+
+        // Encode ke base64url
+        $raw = rtrim(strtr(base64_encode($rawMessage), '+/', '-_'), '=');
+
+        $message = new Gmail\Message();
+        $message->setRaw($raw);
+
+        // Kirim email
+        $gmail->users_messages->send('me', $message);
+
+        return true;
     } catch (Exception $e) {
-        $errorMsg = "Mailer Error: " . $mail->ErrorInfo;
-        error_log($errorMsg);
-        error_log("Exception: " . $e->getMessage());
+        error_log("Mailer Error: " . $e->getMessage());
         return false;
     }
 }
