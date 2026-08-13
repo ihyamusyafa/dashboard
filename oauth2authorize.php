@@ -1,12 +1,13 @@
 <?php
+// Suppress deprecation notices and log errors in production so vendor warnings don't break redirects
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+
 session_start();
 require __DIR__ . '/vendor/autoload.php';
 
 use Google\Client;
-
-// Display errors for debugging
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
 // Check if credentials.json exists
 $credentialsPath = __DIR__ . '/credentials.json';
