@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'config/database.php'; // koneksi pakai PDO
+include 'mailer.php'; // fungsi kirim email OTP
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username   = trim($_POST['username']);
@@ -11,46 +11,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirmPwd) {
         $error = "Password dan konfirmasi tidak sama!";
     } else {
-        try {
-            // cek apakah email sudah terdaftar
-            $check = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = :e");
-            $check->execute([':e' => $email]);
-            $exists = $check->fetchColumn();
+        // generate OTP
+        $otp = rand(100000, 999999);
 
-            if ($exists > 0) {
-                $error = "Email sudah terdaftar, silakan login atau gunakan email lain.";
-            } else {
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        // simpan data sementara di session (belum masuk DB)
+        $_SESSION['pending_user']  = $username;
+        $_SESSION['pending_email'] = $email;
+        $_SESSION['pending_pass']  = password_hash($password, PASSWORD_DEFAULT);
+        $_SESSION['otp']           = $otp;
 
-                $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
-                                        VALUES (:u, :e, :p, false)");
-                $success = $stmt->execute([
-                    ':u' => $username,
-                    ':e' => $email,
-                    ':p' => $hashedPassword
-                ]);
-
-                if ($success) {
-                    // generate OTP
-                    $otp = rand(100000, 999999);
-                    $_SESSION['pending_user']  = $username;
-                    $_SESSION['pending_email'] = $email;
-                    $_SESSION['otp']           = $otp;
-
-                    // kirim email OTP
-                    include 'mailer.php';
-                    if (sendOtpMail($email, $otp)) {
-                        header("Location: otp.php");
-                        exit;
-                    } else {
-                        $error = "Gagal mengirim OTP ke email.";
-                    }
-                } else {
-                    $error = "Gagal daftar: " . implode(" | ", $stmt->errorInfo());
-                }
-            }
-        } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+        // kirim email OTP
+        if (sendOtpMail($email, $otp)) {
+            header("Location: otp.php");
+            exit;
+        } else {
+            $error = "Gagal mengirim OTP ke email.";
         }
     }
 }
@@ -60,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8">
   <title>Register</title>
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='8' fill='%2300b4d8'/></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-body">
@@ -88,11 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <?php if(isset($error)) echo "<p class='error'>$error</p>"; ?>
-
     <p class="register-text">
       Sudah punya akun? <a href="login.php">Login di sini</a>
     </p>
   </div>
 </body>
 </html>
-  

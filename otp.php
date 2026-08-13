@@ -7,15 +7,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($inputOtp == $_SESSION['otp']) {
         try {
-            $stmt = $conn->prepare("UPDATE users SET is_verified = true WHERE email = :e");
-            $stmt->execute([':e' => $_SESSION['pending_email']]);
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) VALUES (:u, :e, :p, true)");
+            $stmt->execute([
+                ':u' => $_SESSION['pending_user'],
+                ':e' => $_SESSION['pending_email'],
+                ':p' => $_SESSION['pending_pass']
+            ]);
 
-            // bersihkan session OTP
-            unset($_SESSION['otp']);
-            unset($_SESSION['pending_email']);
-            unset($_SESSION['pending_user']);
+            // bersihkan session
+            unset($_SESSION['otp'], $_SESSION['pending_user'], $_SESSION['pending_email'], $_SESSION['pending_pass']);
 
-            $success = "Akun berhasil diverifikasi! Silakan login.";
+            $success = "Akun berhasil terdaftar dan terverifikasi!";
         } catch (PDOException $e) {
             $error = "Database error: " . $e->getMessage();
         }
