@@ -47,15 +47,32 @@ try {
     $client = new Client();
     $client->setAuthConfig($credentialsPath);
     
-    // Determine redirect URI based on environment
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    
-    // For development on localhost, use localhost callback
-    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-        $redirectUri = 'http://localhost:8080/oauth2callback.php';
+    // Determine redirect URI. Prefer explicit env var (set this in Railway):
+    // OAUTH_REDIRECT_URI = https://your-production-url/oauth2callback.php
+    $envRedirect = getenv('OAUTH_REDIRECT_URI');
+    if ($envRedirect && filter_var($envRedirect, FILTER_VALIDATE_URL)) {
+        $redirectUri = $envRedirect;
     } else {
-        $redirectUri = $protocol . '://' . $host . '/oauth2callback.php';
+        // Try to detect protocol including proxy headers (Railway uses proxies)
+        $proto = 'http';
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            $proto = 'https';
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+        }
+
+        // Prefer forwarded host header if present
+        $host = $_SERVER['HTTP_HOST'];
+        if (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
+        }
+
+        // For development on localhost, use localhost callback
+        if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+            $redirectUri = 'http://localhost:8080/oauth2callback.php';
+        } else {
+            $redirectUri = $proto . '://' . $host . '/oauth2callback.php';
+        }
     }
     
     $client->setRedirectUri($redirectUri);
