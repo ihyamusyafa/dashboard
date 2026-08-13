@@ -5,17 +5,31 @@ include 'config/database.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inputOtp = trim($_POST['otp']);
 
-    if ($inputOtp == $_SESSION['otp']) {
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
-                                VALUES (:u, :e, :p, true)");
-        $stmt->execute([
-            ':u' => $_SESSION['pending_user'],
-            ':e' => $_SESSION['pending_email'],
-            ':p' => $_SESSION['pending_pass']
-        ]);
+    // Check if OTP exists in session
+    if (!isset($_SESSION['otp'])) {
+        $error = "Sesi OTP telah berakhir. Silakan daftar ulang.";
+    } elseif ($inputOtp == $_SESSION['otp']) {
+        try {
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password, is_verified) 
+                                    VALUES (:u, :e, :p, true)");
+            $stmt->execute([
+                ':u' => $_SESSION['pending_user'],
+                ':e' => $_SESSION['pending_email'],
+                ':p' => $_SESSION['pending_pass']
+            ]);
 
-        unset($_SESSION['otp'], $_SESSION['pending_user'], $_SESSION['pending_email'], $_SESSION['pending_pass']);
-        $success = "Akun berhasil terdaftar dan terverifikasi!";
+            unset($_SESSION['otp'], $_SESSION['pending_user'], $_SESSION['pending_email'], $_SESSION['pending_pass']);
+            $success = "Akun berhasil terdaftar dan terverifikasi!";
+        } catch (PDOException $e) {
+            // Check if it's a duplicate email error
+            if (strpos($e->getMessage(), 'duplicate key') !== false || strpos($e->getMessage(), 'users_email_key') !== false) {
+                $error = "Email sudah terdaftar. Silakan gunakan email lain atau login jika sudah punya akun.";
+            } else {
+                $error = "Terjadi kesalahan saat registrasi. Silakan coba lagi.";
+            }
+            // Log the actual error for debugging
+            error_log("Database Error: " . $e->getMessage());
+        }
     } else {
         $error = "Kode OTP salah!";
     }

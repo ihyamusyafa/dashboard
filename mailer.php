@@ -19,8 +19,8 @@ function sendOtpMail($toEmail, $otp) {
         $mail->SMTPAuth   = true;
         $mail->Username   = '2311501650@student.budiluhur.ac.id'; // Gmail kamu
         $mail->Password   = 'alabatdrxikpltsf';                   // App Password Gmail (16 digit)
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Gmail pakai STARTTLS di port 587
-        $mail->Port       = 587;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          // Use SMTPS instead of STARTTLS
+        $mail->Port       = 465;                                   // SMTPS port (was 587)
         $mail->Timeout    = 10;
 
         // Recipients

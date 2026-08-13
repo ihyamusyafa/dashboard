@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: otp.php");
             exit;
         } else {
-            $error = "Gagal mengirim OTP ke email.";
+            $error = "Gagal mengirim OTP ke email. Periksa error log untuk detail.";
         }
     }
 }

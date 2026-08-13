@@ -3,6 +3,7 @@
     "php": "^8.0",
     "ext-pdo": "*",
     "ext-pdo_pgsql": "*",
-    "phpmailer/phpmailer": "^6.9"
+    "phpmailer/phpmailer": "^6.9",
+    "google/apiclient": "2.0"
   }
 }
